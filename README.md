@@ -24,7 +24,7 @@ The agent runs a continuous conversation loop. On every message it decides what 
 5. After the update, control returns to `task_mAIstro` for a natural-language reply.
 
 ```mermaid
-flowchart TD
+flowchart LR
     START([START]) --> task_mAIstro
 
     task_mAIstro -->|no tool call| END([END])
