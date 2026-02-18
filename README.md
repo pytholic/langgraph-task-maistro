@@ -41,20 +41,42 @@ flowchart LR
 
 The graph runs as a containerized service. Three containers are orchestrated via Docker Compose:
 
-```
-┌─────────────────────────────────────────┐
-│           docker-compose                │
-│                                         │
-│  ┌──────────┐  ┌──────────┐  ┌───────┐  │
-│  │ LangGraph│  │ Postgres │  │ Redis │  │
-│  │  Server  │◄─┤ (state + │  │(stream│  │
-│  │  (API)   │  │  store)  │  │ pub/  │  │
-│  │  :8123   │  │          │  │  sub) │  │
-│  └────┬─────┘  └──────────┘  └───────┘  │
-└───────┼─────────────────────────────────┘
-        │ HTTP/REST
-        ▼
-  SDK Client / Remote Graph / LangSmith Studio / REST API
+```mermaid
+flowchart TD
+    %% Boundary for Docker Compose
+    subgraph DockerCompose [docker-compose env]
+        direction TB
+        
+        %% Internal Services
+        Server[LangGraph Server<br/><b>API :8123</b>]
+        
+        subgraph Infrastructure [Data & Messaging Layer]
+            direction LR
+            Postgres[(Postgres<br/><i>state + store</i>)]
+            Redis[(Redis<br/><i>stream pub/sub</i>)]
+        end
+    end
+
+    %% Internal Connections
+    Server <--> Postgres
+    Server <--> Redis
+
+    %% External Interface
+    Clients([SDK Client / Remote Graph<br/>LangSmith Studio / REST API])
+
+    %% External Connection
+    Server <== " HTTP / REST " ==> Clients
+
+    %% Styling
+    classDef docker fill:transparent,stroke:#2496ed,stroke-width:2px,stroke-dasharray: 5 5
+    classDef server fill:#f8fafc,stroke:#1e293b,stroke-width:2px,color:#1e293b
+    classDef db fill:#f1f5f9,stroke:#475569,stroke-width:1px,color:#334155
+    classDef ext fill:#3b82f6,stroke:#1d4ed8,stroke-width:2px,color:#fff
+
+    class DockerCompose docker
+    class Server server
+    class Postgres,Redis db
+    class Clients ext
 ```
 
 | Container | Purpose |
